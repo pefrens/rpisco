@@ -1,0 +1,347 @@
+# rpisco ![](reference/figures/logo.png)
+
+El paquete **`rpisco`** proporciona acceso programático, descarga con
+verificación de integridad, gestión de caché local, procesamiento
+geoespacial, análisis de anomalías y métricas de validación hidrológica
+para el producto grillado de precipitación de alta resolución para el
+Perú y cuencas transfronterizas: **PISCOp v3.0 (1981–2025)**,
+desarrollado por la Dirección de Hidrología del Servicio Nacional de
+Meteorología e Hidrología del Perú (**SENAMHI**).
+
+> **Publicación Científica Oficial:**  
+> Gutierrez, L. y Lavado-Casimiro, W. (2025). *PISCOp (v3.0):
+> Actualización de datos grillados de precipitación*. Servicio Nacional
+> de Meteorología e Hidrología del Perú - SENAMHI.  
+> Libro técnico: <https://hdl.handle.net/20.500.12542/4183> (Depósito
+> Legal N° 2025-07014).  
+> Repositorio Figshare: <https://doi.org/10.6084/m9.figshare.32411886>.
+
+------------------------------------------------------------------------
+
+## 📂 Estructura de Archivos del Dataset (PISCOp v3.0)
+
+PISCOp v3.0 está organizado en tres archivos oficiales en formato NetCDF
+(`.nc`) a **0.10° (~10 km)** de resolución espacial sobre el dominio
+geográfico de Perú y cuencas transfronterizas (2°00’ N – 19°00’ S,
+64°00’ W – 82°00’ W):
+
+| Archivo | Producto | Variable | Paso Temporal | Período Temporal | Capas | Tamaño Aprox. | Descripción |
+|----|----|----|----|----|----|----|----|
+| `PISCOp_m.nc` | `PISCOp_m` | `pr` | Mensual (`mm/mes`) | 1981-01 a 2025-12 | 540 | ~56.6 MB | Precipitación mensual acumulada |
+| `PISCOp_d.nc` | `PISCOp_d` | `pr` | Diario (`mm/día`) | 1981-01-01 a 2025-12-31 | 16,436 | ~1.52 GB | Precipitación diaria continua |
+| `PISCOp_clim2.nc` | `PISCOp_clim2` | `pr` | Normal Climatológica | 1991–2015 normal | 12 | ~1.83 MB | Climatología mensual normal de 12 meses |
+
+------------------------------------------------------------------------
+
+## 🔬 Metodología y Novedades de PISCOp v3.0
+
+Respecto a versiones anteriores (v2.1), PISCOp v3.0 incorpora mejoras
+sustanciales:
+
+1.  **Red Pluviométrica Ampliada:** Más de 1,203 estaciones base (650 en
+    Perú y el resto en cuencas transfronterizas de Ecuador, Colombia,
+    Brasil, Bolivia y Chile). Tras un riguroso control de calidad (QC
+    estándar y mejorado), 771 estaciones fueron seleccionadas para
+    interpolación (casi el doble de las 441 de la versión 2.1).
+2.  **Imputación de Datos Faltantes Avanzada:**
+    - *Escala diaria:* Enfoque híbrido de **Valores de Referencia (VR)**
+      con Machine Learning, Quantile Mapping y homogeneización
+      automática (Huerta et al., 2024 SC-PREC4SA; Brugnara et al.,
+      2019).
+    - *Escala mensual:* Método **Cutoff** espacio-temporal (Feng et
+      al., 2014) complementado con Quantile Mapping sobre CHIRPM
+      mensual.
+3.  **Corrección Satelital y Climatológica:** CHIRPS v3.0 / CHIRP v3.0
+    modificado con la climatología `PISCOp_clim v2.0` basada en TRMM-PR
+    a 1 km de alta resolución espacial (Hirose & Okada, 2018; Manz et
+    al., 2016).
+4.  **Fusión Geoespacial Híbrida:**
+    - Precipitación diaria preliminar ($`P\text{-}PISCOp_d`$) generada
+      mediante **Residual Inverse Distance Weighting (RIDW)**.
+    - Precipitación mensual ($`PISCOp_m`$) generada mediante **Residual
+      Ordinary Kriging (ROK)**.
+    - Consistencia punto-píxel mediante un **Factor de Corrección
+      Mensual (FCM)**:  
+      ``` math
+      PISCOp_d = P\text{-}PISCOp_d \times \frac{PISCOp_m}{\sum P\text{-}PISCOp_d}
+      ```
+
+------------------------------------------------------------------------
+
+## 📦 Características del Paquete `rpisco`
+
+- **Descarga inteligente y caché persistente:** Descarga directa desde
+  Figshare con control de tiempo de espera (`timeout`), reintentos
+  automáticos
+  ([`httr2::req_retry`](https://httr2.r-lib.org/reference/req_retry.html))
+  y verificación de integridad MD5. Compatible con directivas CRAN
+  ([`tools::R_user_dir`](https://rdrr.io/r/tools/userdir.html)).
+- **Resolución flexible de nombres y alias:** Acepta `"monthly"`,
+  `"daily"`, `"climatology"`, o nombres oficiales de archivo
+  (`"PISCOp_m"`, `"PISCOp_d"`, `"PISCOp_clim2"`).
+- **Integración nativa con `terra` y `sf`:** Retorna objetos
+  `SpatRaster` con CRS `EPSG:4326` y unidades configuradas.
+- **Filtro temporal enriquecido:** Filtre capas por fechas individuales,
+  rangos de fechas, años (`1998` o `1997:1998`) o meses (`"1998-01"` a
+  `"1998-12"`).
+- **Recorte espacial integrado:** Recorte directo en
+  `pisco_read(..., aoi = ...)` o con
+  [`pisco_clip()`](https://pefrens.github.io/rpisco/reference/pisco_clip.md)
+  usando polígonos `sf`, objetos `bbox` o coordenadas límites
+  `c(xmin, ymin, xmax, ymax)`.
+- **Extracción de series temporales ordenadas (*tidy*):** Series
+  puntuales (estaciones pluviométricas) o resúmenes zonales en cuencas
+  hidrográficas en formato `tibble`.
+- **Agregaciones temporales e hidrológicas:** Totales anuales, ciclo
+  mensual y temporadas hidrológicas oficiales de SENAMHI (Temporada
+  húmeda: Nov–Abr; Temporada seca: May–Oct).
+- **Análisis de anomalías:** Cálculo de anomalías mensuales en mm o
+  porcentaje respecto a `PISCOp_clim2` o la media multianual con
+  [`pisco_anomaly()`](https://pefrens.github.io/rpisco/reference/pisco_anomaly.md).
+- **Métricas estadísticas de validación:** Implementa las métricas
+  oficiales del informe técnico: Correlación de Pearson (COR), Índice
+  refinado de concordancia ($`d_r`$ de Willmott et al., 2012), Sesgo
+  Medio Normalizado (NMB, %) y Error Bruto Medio Normalizado (NMGE).
+- **Citas y metadatos:** Generador de citas y BibTeX con
+  [`pisco_citation()`](https://pefrens.github.io/rpisco/reference/pisco_citation.md).
+
+------------------------------------------------------------------------
+
+## 🚀 Instalación
+
+Puedes instalar la versión de desarrollo de **rpisco** desde GitHub con:
+
+``` r
+
+# install.packages("pak")
+pak::pak("pefrens/rpisco")
+
+# O mediante devtools / remotes:
+# devtools::install_github("pefrens/rpisco")
+```
+
+------------------------------------------------------------------------
+
+## 💡 Ejemplos de Uso
+
+### 1. Consultar Catálogo, Extensión y Citas Oficiales
+
+``` r
+
+library(rpisco)
+
+# Catálogo completo con estado de descarga local
+pisco_catalog()
+
+# Extensión geográfica oficial para Perú y cuencas transfronterizas
+pisco_extent()
+#>  xmin   ymin   xmax   ymax 
+#> -82.0  -19.0  -64.0    2.0
+
+# Bounding box en formato sf
+pisco_bbox()
+
+# Obtener la referencia bibliográfica oficial (texto o BibTeX)
+pisco_citation("text")
+pisco_citation("bibtex")
+```
+
+------------------------------------------------------------------------
+
+### 2. Descargar y Cargar en `terra`
+
+La función
+[`pisco_read()`](https://pefrens.github.io/rpisco/reference/pisco_read.md)
+busca el archivo en la caché local. Si aún no está descargado, lo
+descarga automáticamente validando su hash MD5:
+
+``` r
+
+library(terra)
+
+# Cargar producto mensual completo (1981-2025, 540 capas)
+r_mensual <- pisco_read("monthly")
+r_mensual
+
+# Cargar producto normal climatológico 1991-2015 (12 capas)
+r_clim <- pisco_read("climatology")
+
+# Filtrar directamente por años de interés (ej. El Niño 1997-1998):
+r_nino <- pisco_read("monthly", dates = c(1997, 1998))
+```
+
+------------------------------------------------------------------------
+
+### 3. Recorte Espacial por Cuenca o Bounding Box
+
+Puedes recortar la grilla nacional directamente durante la lectura con
+`aoi` o usando
+[`pisco_clip()`](https://pefrens.github.io/rpisco/reference/pisco_clip.md):
+
+``` r
+
+library(sf)
+
+# Recortar por coordenadas límites (ej. Región Lima / Cuenca Rímac: xmin, ymin, xmax, ymax)
+r_rimac <- pisco_read("monthly", dates = 1998, aoi = c(-77.2, -12.4, -75.8, -11.4))
+
+# O recortar y enmascarar con un polígono sf de una cuenca hidrográfica:
+# cuenca <- sf::st_read("cuenca_santa.gpkg")
+# r_santa <- pisco_clip(r_mensual, mask = cuenca)
+
+plot(r_rimac[[1]], main = "PISCOp v3.0 - Precipitación Enero 1998 (mm)")
+```
+
+------------------------------------------------------------------------
+
+### 4. Extracción de Series Temporales (*Tidy*)
+
+#### A. En puntos de coordenadas o estaciones pluviométricas
+
+``` r
+
+# Extraer la serie temporal mensual para Cusco (lon = -71.96, lat = -13.53)
+serie_cusco <- pisco_extract(r_mensual, points = c(lon = -71.96, lat = -13.53))
+head(serie_cusco)
+#> # A tibble: 6 × 5
+#>      id   lon   lat date       precipitation
+#>   <int> <dbl> <dbl> <date>             <dbl>
+#> 1     1 -72.0 -13.5 1981-01-01         142.4
+#> 2     1 -72.0 -13.5 1981-02-01         118.1
+#> 3     1 -72.0 -13.5 1981-03-01          98.6
+#> 4     1 -72.0 -13.5 1981-04-01          34.2
+#> 5     1 -72.0 -13.5 1981-05-01           8.1
+#> 6     1 -72.0 -13.5 1981-06-01           2.3
+```
+
+#### B. Promedios zonales por cuencas
+
+``` r
+
+# Extraer precipitación media areal por cuencas:
+# serie_cuenca <- pisco_extract(r_mensual, polygons = cuencas_sf, fun = "mean", id_col = "nombre_cuenca")
+```
+
+------------------------------------------------------------------------
+
+### 5. Agregaciones Temporales y Estaciones Hidrológicas (SENAMHI)
+
+SENAMHI define los periodos hidrológicos para el Perú como: -
+**Temporada húmeda:** Noviembre a Abril (`wet_Nov_Apr`). - **Temporada
+seca:** Mayo a Octubre (`dry_May_Oct`).
+
+``` r
+
+# 1. Acumulado anual (mm/año):
+r_anual <- pisco_aggregate(r_mensual, by = "year", fun = "sum")
+
+# 2. Agregación estacional según norma SENAMHI:
+r_estacional <- pisco_aggregate(r_mensual, by = "season_senamhi", fun = "sum")
+
+# 3. Ciclo anual mensual medio (12 capas Jan-Dec):
+r_ciclo <- pisco_aggregate(r_mensual, by = "month", fun = "mean")
+```
+
+------------------------------------------------------------------------
+
+### 6. Cálculo de Anomalías de Precipitación
+
+Calcula anomalías mensuales relativas (%) o absolutas (mm) respecto a la
+normal climatológica 1991–2015 (`PISCOp_clim2`):
+
+``` r
+
+# Anomalías porcentuales (%) durante el evento El Niño 1997-1998
+anom_pct <- pisco_anomaly(r_nino, baseline = r_clim, type = "percentage")
+
+# Anomalías absolutas en mm
+anom_mm <- pisco_anomaly(r_nino, baseline = r_clim, type = "difference")
+```
+
+------------------------------------------------------------------------
+
+### 7. Métricas Estadísticas de Validación Hidrológica
+
+Evalúa el desempeño de simulaciones o datos grillados frente a
+estaciones observadas utilizando las métricas descritas en el estudio
+oficial (Willmott et al., 2012; Gutierrez & Lavado-Casimiro, 2025):
+
+``` r
+
+obs <- c(15.2, 28.4, 0.0, 4.1, 72.0, 110.5)
+sim <- c(14.0, 25.1, 0.2, 5.8, 68.3, 102.1)
+
+# Resumen completo de métricas
+pisco_metrics(sim, obs)
+#> # A tibble: 1 × 8
+#>       n   cor    dr   nmb  nmge  rmse   mae  bias
+#>   <int> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+#> 1     6 0.998 0.954 -3.73 0.061  4.23  2.43 -1.43
+
+# Métricas individuales
+pisco_metric_dr(sim, obs)    # Índice refinado dr de Willmott (de -1 a 1, >0.5 indica buen ajuste)
+pisco_metric_nmb(sim, obs)   # Sesgo medio normalizado (%)
+pisco_metric_nmge(sim, obs)  # Error bruto medio normalizado
+```
+
+------------------------------------------------------------------------
+
+### 8. Administración de la Caché Local
+
+Los archivos descargados se conservan en un directorio seguro del
+usuario ([`tools::R_user_dir`](https://rdrr.io/r/tools/userdir.html)):
+
+``` r
+
+# Ver ruta del directorio de caché
+pisco_cache_dir()
+
+# Estado de los archivos descargados y tamaños en MB
+pisco_cache_status()
+
+# Liberar espacio eliminando un dataset o todos:
+# pisco_cache_clear(dataset = "monthly")
+# pisco_cache_clear(dataset = "all")
+```
+
+------------------------------------------------------------------------
+
+## ⚠️ Recomendaciones de Uso y Limitaciones
+
+Tal como se detalla en el informe técnico del SENAMHI (*Gutierrez &
+Lavado-Casimiro, 2025*): - **Aplicaciones Recomendadas:**
+Caracterización hidrológica a escala de cuenca y regional, balance
+hídrico multianual, modelamiento de caudales medios y diarios en modelos
+hidrológicos distribuidos/semidistribuidos (ej. GR2M, SWAT). - **Lluvias
+Convectivas y Eventos Extremos:** La componente satelital basada en
+infrarrojo térmico (CHIRP) tiene limitaciones para captar eventos
+convectivos muy localizados en zonas con escasa densidad de
+pluviómetros. Para eventos extremos locales o recuentos de días de
+lluvia intensos, se recomienda contrastar con estaciones observadas
+locales.
+
+------------------------------------------------------------------------
+
+## 📖 Referencia y Citación
+
+Si utilizas **`rpisco`** o los datos de **PISCOp v3.0**, por favor cita
+la publicación técnica de SENAMHI y el repositorio del dataset:
+
+``` bibtex
+@techreport{gutierrez2025piscop,
+  author      = {Gutierrez, Leonardo and Lavado-Casimiro, Waldo},
+  title       = {{PISCOp (v3.0): Actualizaci{\'o}n de datos grillados de precipitaci{\'o}n}},
+  institution = {Servicio Nacional de Meteorolog{\'i}a e Hidrolog{\'i}a del Per{\'u} (SENAMHI)},
+  year        = {2025},
+  address     = {Lima, Per{\'u}},
+  url         = {https://hdl.handle.net/20.500.12542/4183}
+}
+
+@misc{gutierrez2025piscop_data,
+  author    = {Gutierrez, Leonardo and Lavado-Casimiro, Waldo},
+  title     = {{PISCOp v3.0: High-resolution daily and monthly gridded rainfall dataset over Peru}},
+  year      = {2025},
+  publisher = {Figshare},
+  doi       = {10.6084/m9.figshare.32411886}
+}
+```
