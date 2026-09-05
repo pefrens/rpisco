@@ -2,4 +2,11 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
+^README\.html$
 ^cran-comments\.md$
+^\.github$
+^raw-docs$
+^codecov\.yml$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

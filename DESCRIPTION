@@ -1,6 +1,6 @@
 Package: rpisco
 Title: Access and Process PISCO High-Resolution Climate Grids for Peru
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person(given = c("Paul", "Efren"),
            family = "Santos Andrade",
@@ -15,23 +15,24 @@ Authors@R: c(
            role = "dtc")
   )
 Description: Provides programmatic access, local caching, spatial subsetting,
-    and temporal aggregation for the Peruvian Interpolated data of SENAMHI's
-    Climatological and hydrological Observations (PISCO). Specifically supports
-    PISCOp v3.0 (1981-2025) gridded daily, monthly, and climatological rainfall
-    datasets hosted on Figshare <doi:10.6084/m9.figshare.32411886>.
-    Includes optimized workflows for basin-scale extraction, seasonal
-    aggregations, and raster processing based on 'terra' and 'sf'.
+    temporal aggregation, anomaly computation, and validation metrics for the
+    Peruvian Interpolated data of SENAMHI's Climatological and hydrological
+    Observations (PISCO). Specifically supports PISCOp v3.0 (1981-2025)
+    gridded daily ('PISCOp_d.nc'), monthly ('PISCOp_m.nc'), and climatological
+    normal ('PISCOp_clim2.nc') rainfall datasets developed by SENAMHI and
+    hosted on Figshare <doi:10.6084/m9.figshare.32411886>. Includes optimized
+    workflows for basin-scale extraction, seasonal aggregations (SENAMHI wet
+    and dry seasons), and spatial raster processing based on 'terra' and 'sf'.
 License: MIT + file LICENSE
-URL: https://github.com/pefrens/rpisco
+URL: https://github.com/pefrens/rpisco, https://pefrens.github.io/rpisco/
 BugReports: https://github.com/pefrens/rpisco/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
     cli,
-    fs,
     httr2,
-    rlang,
     sf,
+    stats,
     terra,
     tibble,
     tools
@@ -43,4 +44,4 @@ Suggests:
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.1.0
+Config/roxygen2/version: 8.1.0
