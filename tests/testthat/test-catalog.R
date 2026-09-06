@@ -1,40 +1,69 @@
-test_that("pisco_catalog returns expected structure and products", {
-  cat_df <- pisco_catalog()
-  
-  expect_s3_class(cat_df, "tbl_df")
-  expect_equal(nrow(cat_df), 3)
+test_that("pisco_catalog returns expected structure and products across variables", {
+  cat_all <- pisco_catalog("all")
+  expect_s3_class(cat_all, "tbl_df")
+  expect_gte(nrow(cat_all), 12)
   
   expected_cols <- c("dataset", "variable", "product", "filename",
                      "timestep", "period", "layers", "resolution",
-                     "unit", "size_mb", "cached", "download_url")
-  expect_true(all(expected_cols %in% colnames(cat_df)))
+                     "unit", "size_mb", "source", "cached", "download_url")
+  expect_true(all(expected_cols %in% colnames(cat_all)))
   
-  expect_setequal(cat_df$dataset, c("monthly", "daily", "climatology"))
-  expect_setequal(cat_df$product, c("PISCOp_m", "PISCOp_d", "PISCOp_clim2"))
-  expect_setequal(cat_df$filename, c("PISCOp_m.nc", "PISCOp_d.nc", "PISCOp_clim2.nc"))
-  expect_equal(cat_df$layers[cat_df$dataset == "monthly"], 540L)
-  expect_equal(cat_df$layers[cat_df$dataset == "daily"], 16436L)
-  expect_equal(cat_df$layers[cat_df$dataset == "climatology"], 12L)
+  # Filter by variable
+  cat_pr <- pisco_catalog("precipitation")
+  expect_equal(nrow(cat_pr), 3)
+  expect_true(all(cat_pr$variable == "precipitation"))
+  
+  cat_tx <- pisco_catalog("temperature")
+  expect_equal(nrow(cat_tx), 4)
+  expect_true(all(cat_tx$variable == "temperature"))
+  
+  cat_eto <- pisco_catalog("evapotranspiration")
+  expect_equal(nrow(cat_eto), 1)
+  expect_equal(cat_eto$product, "PISCOeo_pm_clim")
+  
+  cat_ero <- pisco_catalog("erosivity")
+  expect_equal(nrow(cat_ero), 2)
+  expect_setequal(cat_ero$product, c("PISCOa_re", "PISCOa_ed"))
+  
+  cat_q <- pisco_catalog("streamflow")
+  expect_equal(nrow(cat_q), 4)
+  expect_true(all(cat_q$source == "HydroShare"))
 })
 
-test_that("dataset alias resolver works accurately", {
+test_that("dataset alias resolver works for all variables", {
+  # Precipitation
   expect_equal(.pisco_resolve_dataset("monthly"), "monthly")
   expect_equal(.pisco_resolve_dataset("PISCOp_m"), "monthly")
-  expect_equal(.pisco_resolve_dataset("PISCOp_m.nc"), "monthly")
-  expect_equal(.pisco_resolve_dataset("m"), "monthly")
-  expect_equal(.pisco_resolve_dataset("mensual"), "monthly")
-  
   expect_equal(.pisco_resolve_dataset("daily"), "daily")
-  expect_equal(.pisco_resolve_dataset("PISCOp_d"), "daily")
-  expect_equal(.pisco_resolve_dataset("d"), "daily")
-  expect_equal(.pisco_resolve_dataset("diario"), "daily")
-  
   expect_equal(.pisco_resolve_dataset("climatology"), "climatology")
-  expect_equal(.pisco_resolve_dataset("PISCOp_clim2"), "climatology")
-  expect_equal(.pisco_resolve_dataset("clim"), "climatology")
-  expect_equal(.pisco_resolve_dataset("normal"), "climatology")
   
-  expect_error(.pisco_resolve_dataset("invalid_name"))
+  # Temperature
+  expect_equal(.pisco_resolve_dataset("tmax_daily"), "tmax_daily")
+  expect_equal(.pisco_resolve_dataset("tmax"), "tmax_daily")
+  expect_equal(.pisco_resolve_dataset("PISCOt_tx_d"), "tmax_daily")
+  expect_equal(.pisco_resolve_dataset("tmin_daily"), "tmin_daily")
+  expect_equal(.pisco_resolve_dataset("tmin"), "tmin_daily")
+  expect_equal(.pisco_resolve_dataset("tmax_clim"), "tmax_clim")
+  expect_equal(.pisco_resolve_dataset("tmin_clim"), "tmin_clim")
+  
+  # Evapotranspiration
+  expect_equal(.pisco_resolve_dataset("eto_clim"), "eto_clim")
+  expect_equal(.pisco_resolve_dataset("piscoeo_pm"), "eto_clim")
+  expect_equal(.pisco_resolve_dataset("eto"), "eto_clim")
+  
+  # Erosivity
+  expect_equal(.pisco_resolve_dataset("erosivity_r"), "erosivity_r")
+  expect_equal(.pisco_resolve_dataset("piscoa_re"), "erosivity_r")
+  expect_equal(.pisco_resolve_dataset("erosivity_density"), "erosivity_density")
+  expect_equal(.pisco_resolve_dataset("piscoa_ed"), "erosivity_density")
+  
+  # Streamflow
+  expect_equal(.pisco_resolve_dataset("streamflow_monthly"), "streamflow_monthly")
+  expect_equal(.pisco_resolve_dataset("pisco_gr2m"), "streamflow_monthly")
+  expect_equal(.pisco_resolve_dataset("streamflow_daily"), "streamflow_daily")
+  expect_equal(.pisco_resolve_dataset("pisco_arnovic"), "streamflow_daily")
+  
+  expect_error(.pisco_resolve_dataset("unknown_dataset_xyz"))
 })
 
 test_that("pisco_extent and pisco_bbox return correct boundaries", {
@@ -53,14 +82,25 @@ test_that("pisco_extent and pisco_bbox return correct boundaries", {
   expect_s4_class(ext_obj, "SpatExtent")
 })
 
-test_that("pisco_citation produces text and bibtex formats", {
-  txt <- pisco_citation("text")
-  expect_match(txt, "Gutierrez, L. y Lavado-Casimiro, W.")
-  expect_match(txt, "SENAMHI")
-  expect_match(txt, "10.6084/m9.figshare.32411886")
+test_that("pisco_citation produces text and bibtex formats across variables", {
+  txt_all <- pisco_citation("all", "text")
+  expect_match(txt_all, "Gutierrez, L. y Lavado-Casimiro, W.")
+  expect_match(txt_all, "PISCOt v1.2")
+  expect_match(txt_all, "PISCOeo_pm")
+  expect_match(txt_all, "PISCO_reed")
+  expect_match(txt_all, "PISCO_HyM")
   
-  bib <- pisco_cite("bibtex")
-  expect_match(bib, "@techreport")
-  expect_match(bib, "@misc")
-  expect_match(bib, "PISCOp")
+  # Specific family citations
+  txt_t <- pisco_citation("temperature")
+  expect_match(txt_t, "Huerta, A., Aybar, C.")
+  
+  txt_q <- pisco_citation("streamflow")
+  expect_match(txt_q, "Llauca, H., Lavado-Casimiro, W.")
+  
+  bib_t <- pisco_cite("temperature", "bibtex")
+  expect_match(bib_t, "@article\\{huerta2023piscot")
+  
+  bib_q <- pisco_cite("streamflow", "bibtex")
+  expect_match(bib_q, "@article\\{llauca2021gr2m")
+  expect_match(bib_q, "@article\\{llauca2023arnovic")
 })

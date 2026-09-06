@@ -3,13 +3,26 @@
 \name{pisco_citation}
 \alias{pisco_citation}
 \alias{pisco_cite}
-\title{Citation Information for PISCOp v3.0}
+\title{Citation Information for PISCO Products}
 \usage{
-pisco_citation(format = c("text", "bibtex"))
+pisco_citation(
+  dataset = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
+    "streamflow"),
+  format = c("text", "bibtex")
+)
 
-pisco_cite(format = c("text", "bibtex"))
+pisco_cite(
+  dataset = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
+    "streamflow"),
+  format = c("text", "bibtex")
+)
 }
 \arguments{
+\item{dataset}{Character. Filter citations for a specific dataset or group:
+\code{"all"}, \code{"precipitation"} (\code{"piscop"}), \code{"temperature"} (\code{"piscot"}),
+\code{"evapotranspiration"} (\code{"piscoeo"}), \code{"erosivity"} (\code{"pisco_reed"}), or
+\code{"streamflow"} (\code{"pisco_hym"}). Default is \code{"all"}.}
+
 \item{format}{Character. Citation format: \code{"text"} (formatted string for papers/reports)
 or \code{"bibtex"} (BibTeX entry). Default is \code{"text"}.}
 }
@@ -17,10 +30,16 @@ or \code{"bibtex"} (BibTeX entry). Default is \code{"text"}.}
 A character string containing the requested citation (invisibly if printed).
 }
 \description{
-Prints and returns official citation metadata for the PISCOp v3.0 dataset
-and the associated technical publication by SENAMHI (Gutierrez & Lavado-Casimiro, 2025).
+Prints and returns official citation metadata for datasets in the PISCO
+family and their associated scientific publications from SENAMHI and international journals.
 }
 \examples{
+# Citation for all PISCO products
 pisco_citation()
-pisco_citation("bibtex")
+
+# BibTeX for temperature (PISCOt v1.2)
+pisco_citation("temperature", format = "bibtex")
+
+# Citation for streamflow (PISCO_HyM)
+pisco_citation("streamflow")
 }

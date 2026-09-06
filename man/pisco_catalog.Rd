@@ -4,15 +4,30 @@
 \alias{pisco_catalog}
 \title{Catalog of PISCO Products}
 \usage{
-pisco_catalog()
+pisco_catalog(
+  variable = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
+    "streamflow")
+)
+}
+\arguments{
+\item{variable}{Character. Variable filter: \code{"all"}, \code{"precipitation"},
+\code{"temperature"}, \code{"evapotranspiration"}, \code{"erosivity"}, or \code{"streamflow"}.
+Default is \code{"all"}.}
 }
 \value{
-A \link[tibble:tibble]{tibble::tibble} containing metadata for all available datasets.
+A \link[tibble:tibble]{tibble::tibble} containing metadata for the selected PISCO datasets.
 }
 \description{
-Lists the available PISCO datasets, metadata, temporal ranges,
-resolution, official file names, and current local cache status.
+Lists the available PISCO datasets, variables, metadata, temporal ranges,
+resolution, official file names, hosting repositories, and local cache status
+across the full PISCO family (SENAMHI DHI-SEH).
 }
 \examples{
+# Complete catalog
 pisco_catalog()
+
+# Filter by variable family
+pisco_catalog("precipitation")
+pisco_catalog("temperature")
+pisco_catalog("streamflow")
 }

@@ -5,7 +5,9 @@
 \title{Download PISCO Datasets}
 \usage{
 pisco_download(
-  dataset = c("monthly", "daily", "climatology"),
+  dataset = c("monthly", "daily", "climatology", "tmax_daily", "tmin_daily", "tmax_clim",
+    "tmin_clim", "eto_clim", "erosivity_r", "erosivity_density", "streamflow_monthly",
+    "streamflow_daily", "catchments_gr2m", "rivers_gr2m"),
   destdir = pisco_cache_dir(),
   overwrite = FALSE,
   verify_md5 = TRUE,
@@ -14,17 +16,23 @@ pisco_download(
 )
 }
 \arguments{
-\item{dataset}{Character. The dataset to download: \code{"monthly"} (\code{"PISCOp_m"}),
-\code{"daily"} (\code{"PISCOp_d"}), or \code{"climatology"} (\code{"PISCOp_clim2"}). Default is \code{"monthly"}.}
+\item{dataset}{Character. The dataset to download:
+\itemize{
+\item Precipitation: \code{"monthly"} (\code{"PISCOp_m"}), \code{"daily"} (\code{"PISCOp_d"}), \code{"climatology"} (\code{"PISCOp_clim2"}).
+\item Temperature: \code{"tmax_daily"}, \code{"tmin_daily"}, \code{"tmax_clim"}, \code{"tmin_clim"}.
+\item Evapotranspiration: \code{"eto_clim"} (\code{"PISCOeo_pm"}).
+\item Erosivity: \code{"erosivity_r"}, \code{"erosivity_density"}.
+\item Streamflow: \code{"streamflow_monthly"}, \code{"streamflow_daily"}, \code{"catchments_gr2m"}, \code{"rivers_gr2m"}.
+Default is \code{"monthly"}.
+}}
 
 \item{destdir}{Character. Destination directory. Default is \code{\link[=pisco_cache_dir]{pisco_cache_dir()}}.}
 
 \item{overwrite}{Logical. If \code{TRUE}, re-downloads the file even if present in cache.}
 
-\item{verify_md5}{Logical. If \code{TRUE}, validates the MD5 checksum after download. Default is \code{TRUE}.}
+\item{verify_md5}{Logical. If \code{TRUE} and an MD5 hash is registered, validates the checksum. Default is \code{TRUE}.}
 
-\item{timeout}{Numeric. Maximum seconds to allow for download. Default is 3600 (1 hour),
-accommodating large files like \code{PISCOp_d.nc} (~1.52 GB).}
+\item{timeout}{Numeric. Maximum seconds to allow for download. Default is 3600 (1 hour).}
 
 \item{quiet}{Logical. If \code{TRUE}, suppresses progress messages. Default is \code{FALSE}.}
 }
@@ -32,16 +40,19 @@ accommodating large files like \code{PISCOp_d.nc} (~1.52 GB).}
 Character. The absolute path to the downloaded (or cached) file.
 }
 \description{
-Downloads a PISCO dataset from the official Figshare repository to the local
-cache directory. If the file is already cached and complete, download is skipped
+Downloads a PISCO dataset from official repositories (Figshare or HydroShare)
+to the local cache directory. If the file is already cached, download is skipped
 unless \code{overwrite = TRUE}.
 }
 \examples{
 \dontrun{
 # Download monthly precipitation (56.6 MB)
-fpath <- pisco_download("monthly")
+fpath_pr <- pisco_download("monthly")
 
-# Download normal climatology 1991-2015 (1.83 MB)
-fpath_clim <- pisco_download("climatology")
+# Download climatological normal maximum temperature (0.52 MB)
+fpath_tx <- pisco_download("tmax_clim")
+
+# Download rainfall erosivity R-factor (1.75 MB)
+fpath_re <- pisco_download("erosivity_r")
 }
 }

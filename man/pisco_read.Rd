@@ -2,10 +2,12 @@
 % Please edit documentation in R/read.R
 \name{pisco_read}
 \alias{pisco_read}
-\title{Read PISCO NetCDF as SpatRaster}
+\title{Read PISCO Datasets as SpatRaster or sf Vector}
 \usage{
 pisco_read(
-  dataset = c("monthly", "daily", "climatology"),
+  dataset = c("monthly", "daily", "climatology", "tmax_daily", "tmin_daily", "tmax_clim",
+    "tmin_clim", "eto_clim", "erosivity_r", "erosivity_density", "streamflow_monthly",
+    "streamflow_daily", "catchments_gr2m", "rivers_gr2m"),
   file = NULL,
   dates = NULL,
   aoi = NULL,
@@ -14,17 +16,24 @@ pisco_read(
 )
 }
 \arguments{
-\item{dataset}{Character. The dataset to load: \code{"monthly"} (\code{"PISCOp_m"}),
-\code{"daily"} (\code{"PISCOp_d"}), or \code{"climatology"} (\code{"PISCOp_clim2"}). Default is \code{"monthly"}.}
+\item{dataset}{Character. The dataset to load:
+\itemize{
+\item Precipitation: \code{"monthly"} (\code{"PISCOp_m"}), \code{"daily"} (\code{"PISCOp_d"}), \code{"climatology"} (\code{"PISCOp_clim2"}).
+\item Temperature: \code{"tmax_daily"}, \code{"tmin_daily"}, \code{"tmax_clim"}, \code{"tmin_clim"}.
+\item Evapotranspiration: \code{"eto_clim"} (\code{"PISCOeo_pm"}).
+\item Erosivity: \code{"erosivity_r"}, \code{"erosivity_density"}.
+\item Streamflow: \code{"streamflow_monthly"}, \code{"streamflow_daily"}, \code{"catchments_gr2m"}, \code{"rivers_gr2m"}.
+Default is \code{"monthly"}.
+}}
 
-\item{file}{Character. Optional custom path to a PISCO NetCDF file. If \code{NULL},
-looks in the local cache or downloads automatically.}
+\item{file}{Character. Optional custom path to a PISCO NetCDF or GeoPackage file.
+If \code{NULL}, looks in the local cache or downloads automatically.}
 
 \item{dates}{Vector of dates, years, year-months, or indices to filter layers.
 \itemize{
-\item For daily/monthly: can be Date objects, character dates (\code{"1998-01-01"}),
+\item For daily/monthly rasters: Date objects, character dates (\code{"1998-01-01"}),
 character year-months (\code{c("1997-01", "1998-12")}), or numeric years (\code{1998} or \code{c(1997, 1998)}).
-\item For climatology (12 months): can be integer month numbers (\code{1:12}) or month names.
+\item For climatologies (12 months): integer month numbers (\code{1:12}) or month names.
 }}
 
 \item{aoi}{Optional spatial object (\code{sf}, \code{SpatVector}, or bounding box vector)
@@ -36,24 +45,25 @@ to crop/mask the raster upon reading. Alias for \code{mask}.}
 Default is \code{TRUE}.}
 }
 \value{
-A \link[terra:SpatRaster]{terra::SpatRaster} object with assigned CRS and time attributes.
+A \link[terra:SpatRaster]{terra::SpatRaster} object (for gridded data) or an \code{sf} object (for vector hydrography).
 }
 \description{
-Reads a PISCO NetCDF file into a \link[terra:SpatRaster]{terra::SpatRaster} object. If the file is
+Reads a PISCO dataset into memory or memory-mapped objects (\link[terra:SpatRaster]{terra::SpatRaster}
+for raster grids, or \code{sf} for catchment/river vector layers). If the file is
 not present locally, it can be downloaded automatically if \code{download = TRUE}.
 }
 \examples{
 \dontrun{
-# Read monthly precipitation (1981-2025)
-r <- pisco_read("monthly")
+# Read monthly precipitation
+r_pr <- pisco_read("monthly")
 
-# Read specific time period (e.g. El Nino 1997-1998)
-r_nino <- pisco_read("monthly", dates = c("1997-01-01", "1998-12-31"))
+# Read normal maximum temperature 1981-2010
+r_tx <- pisco_read("tmax_clim")
 
-# Read with direct spatial clipping to a bounding box
-r_sub <- pisco_read("monthly", dates = 1998, aoi = c(-77.5, -12.5, -76.0, -11.5))
+# Read reference evapotranspiration climatology
+r_eto <- pisco_read("eto_clim")
 
-# Read climatological normals 1991-2015
-r_clim <- pisco_read("climatology")
+# Read rainfall erosivity R-factor
+r_ero <- pisco_read("erosivity_r")
 }
 }

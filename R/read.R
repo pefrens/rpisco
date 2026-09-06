@@ -1,40 +1,50 @@
-#' Read PISCO NetCDF as SpatRaster
+#' Read PISCO Datasets as SpatRaster or sf Vector
 #'
 #' @description
-#' Reads a PISCO NetCDF file into a [terra::SpatRaster] object. If the file is
+#' Reads a PISCO dataset into memory or memory-mapped objects ([terra::SpatRaster]
+#' for raster grids, or `sf` for catchment/river vector layers). If the file is
 #' not present locally, it can be downloaded automatically if `download = TRUE`.
 #'
-#' @param dataset Character. The dataset to load: `"monthly"` (`"PISCOp_m"`),
-#'   `"daily"` (`"PISCOp_d"`), or `"climatology"` (`"PISCOp_clim2"`). Default is `"monthly"`.
-#' @param file Character. Optional custom path to a PISCO NetCDF file. If `NULL`,
-#'   looks in the local cache or downloads automatically.
+#' @param dataset Character. The dataset to load:
+#'   - Precipitation: `"monthly"` (`"PISCOp_m"`), `"daily"` (`"PISCOp_d"`), `"climatology"` (`"PISCOp_clim2"`).
+#'   - Temperature: `"tmax_daily"`, `"tmin_daily"`, `"tmax_clim"`, `"tmin_clim"`.
+#'   - Evapotranspiration: `"eto_clim"` (`"PISCOeo_pm"`).
+#'   - Erosivity: `"erosivity_r"`, `"erosivity_density"`.
+#'   - Streamflow: `"streamflow_monthly"`, `"streamflow_daily"`, `"catchments_gr2m"`, `"rivers_gr2m"`.
+#'   Default is `"monthly"`.
+#' @param file Character. Optional custom path to a PISCO NetCDF or GeoPackage file.
+#'   If `NULL`, looks in the local cache or downloads automatically.
 #' @param dates Vector of dates, years, year-months, or indices to filter layers.
-#'   - For daily/monthly: can be Date objects, character dates (`"1998-01-01"`),
+#'   - For daily/monthly rasters: Date objects, character dates (`"1998-01-01"`),
 #'     character year-months (`c("1997-01", "1998-12")`), or numeric years (`1998` or `c(1997, 1998)`).
-#'   - For climatology (12 months): can be integer month numbers (`1:12`) or month names.
+#'   - For climatologies (12 months): integer month numbers (`1:12`) or month names.
 #' @param aoi Optional spatial object (`sf`, `SpatVector`, or bounding box vector)
 #'   to crop/mask the raster upon reading. Alias for `mask`.
 #' @param mask Optional spatial mask. Same as `aoi`.
 #' @param download Logical. If `TRUE` and file is not cached, downloads it automatically.
 #'   Default is `TRUE`.
 #'
-#' @return A [terra::SpatRaster] object with assigned CRS and time attributes.
+#' @return A [terra::SpatRaster] object (for gridded data) or an `sf` object (for vector hydrography).
 #' @export
 #' @examples
 #' \dontrun{
-#' # Read monthly precipitation (1981-2025)
-#' r <- pisco_read("monthly")
+#' # Read monthly precipitation
+#' r_pr <- pisco_read("monthly")
 #'
-#' # Read specific time period (e.g. El Nino 1997-1998)
-#' r_nino <- pisco_read("monthly", dates = c("1997-01-01", "1998-12-31"))
+#' # Read normal maximum temperature 1981-2010
+#' r_tx <- pisco_read("tmax_clim")
 #'
-#' # Read with direct spatial clipping to a bounding box
-#' r_sub <- pisco_read("monthly", dates = 1998, aoi = c(-77.5, -12.5, -76.0, -11.5))
+#' # Read reference evapotranspiration climatology
+#' r_eto <- pisco_read("eto_clim")
 #'
-#' # Read climatological normals 1991-2015
-#' r_clim <- pisco_read("climatology")
+#' # Read rainfall erosivity R-factor
+#' r_ero <- pisco_read("erosivity_r")
 #' }
-pisco_read <- function(dataset = c("monthly", "daily", "climatology"),
+pisco_read <- function(dataset = c("monthly", "daily", "climatology",
+                                  "tmax_daily", "tmin_daily", "tmax_clim", "tmin_clim",
+                                  "eto_clim", "erosivity_r", "erosivity_density",
+                                  "streamflow_monthly", "streamflow_daily",
+                                  "catchments_gr2m", "rivers_gr2m"),
                        file = NULL,
                        dates = NULL,
                        aoi = NULL,
@@ -46,9 +56,9 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology"),
   }
   
   resolved_ds <- if (!is.null(dataset)) .pisco_resolve_dataset(dataset) else "monthly"
+  info <- .pisco_files[[resolved_ds]]
   
   if (is.null(file)) {
-    info <- .pisco_files[[resolved_ds]]
     cached_path <- file.path(pisco_cache_dir(), info$filename)
     
     if (!file.exists(cached_path)) {
@@ -66,27 +76,47 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology"),
     cli::cli_abort("Specified file does not exist: {.file {file}}")
   }
   
+  ext <- tolower(tools::file_ext(file))
+  
+  # Handle vector files (GPKG)
+  if (ext == "gpkg") {
+    v <- sf::st_read(file, quiet = TRUE)
+    if (!is.null(mask)) {
+      if (is.numeric(mask) && length(mask) == 4) {
+        mask_bbox <- sf::st_bbox(c(xmin = mask[1], ymin = mask[2], xmax = mask[3], ymax = mask[4]),
+                                crs = sf::st_crs(v))
+        v <- sf::st_crop(v, mask_bbox)
+      } else if (inherits(mask, "sf") || inherits(mask, "sfc")) {
+        v <- sf::st_intersection(v, sf::st_transform(mask, sf::st_crs(v)))
+      }
+    }
+    return(v)
+  }
+  
   # Load SpatRaster using terra
   r <- terra::rast(file)
   
-  # Ensure CRS is set to EPSG:4326 (WGS84)
+  # Ensure CRS is set to EPSG:4326 (WGS84) if missing
   if (is.na(terra::crs(r)) || terra::crs(r) == "") {
     terra::crs(r) <- .pisco_crs
   }
   
   # Assign standard units if available
-  info <- .pisco_files[[resolved_ds]]
   if (!is.null(info$unit)) {
     terra::units(r) <- info$unit
   }
   
-  # For climatology, if layers lack clear month names, assign 1:12
-  if (resolved_ds == "climatology" && terra::nlyr(r) == 12) {
-    month_labels <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    if (all(grepl("^[0-9]+$", names(r))) || any(is.na(names(r)))) {
-      names(r) <- month_labels
-    }
+  month_labels <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  
+  # For 12-month climatologies, assign month names if generic
+  if (terra::nlyr(r) == 12 && (all(grepl("^[0-9]+$", names(r))) || any(is.na(names(r))))) {
+    names(r) <- month_labels
+  }
+  
+  # For 13-layer erosivity rasters (Annual + 12 months)
+  if (grepl("erosivity", resolved_ds) && terra::nlyr(r) == 13) {
+    names(r) <- c("Annual", month_labels)
   }
   
   # Apply date / layer filtering if requested
@@ -107,8 +137,8 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology"),
 .pisco_filter_dates <- function(r, dates, dataset_name = "monthly") {
   r_time <- terra::time(r)
   
-  # Special case for climatology (12 months without standard calendar dates)
-  if (dataset_name == "climatology" || (is.null(r_time) || all(is.na(r_time)))) {
+  # Special case for climatologies or layers without calendar dates
+  if (is.null(r_time) || all(is.na(r_time)) || grepl("clim|erosivity", dataset_name)) {
     if (is.numeric(dates)) {
       valid_idx <- dates[dates >= 1 & dates <= terra::nlyr(r)]
       if (length(valid_idx) == 0) {

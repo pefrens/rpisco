@@ -1,17 +1,21 @@
 #' Download PISCO Datasets
 #'
 #' @description
-#' Downloads a PISCO dataset from the official Figshare repository to the local
-#' cache directory. If the file is already cached and complete, download is skipped
+#' Downloads a PISCO dataset from official repositories (Figshare or HydroShare)
+#' to the local cache directory. If the file is already cached, download is skipped
 #' unless `overwrite = TRUE`.
 #'
-#' @param dataset Character. The dataset to download: `"monthly"` (`"PISCOp_m"`),
-#'   `"daily"` (`"PISCOp_d"`), or `"climatology"` (`"PISCOp_clim2"`). Default is `"monthly"`.
+#' @param dataset Character. The dataset to download:
+#'   - Precipitation: `"monthly"` (`"PISCOp_m"`), `"daily"` (`"PISCOp_d"`), `"climatology"` (`"PISCOp_clim2"`).
+#'   - Temperature: `"tmax_daily"`, `"tmin_daily"`, `"tmax_clim"`, `"tmin_clim"`.
+#'   - Evapotranspiration: `"eto_clim"` (`"PISCOeo_pm"`).
+#'   - Erosivity: `"erosivity_r"`, `"erosivity_density"`.
+#'   - Streamflow: `"streamflow_monthly"`, `"streamflow_daily"`, `"catchments_gr2m"`, `"rivers_gr2m"`.
+#'   Default is `"monthly"`.
 #' @param destdir Character. Destination directory. Default is [pisco_cache_dir()].
 #' @param overwrite Logical. If `TRUE`, re-downloads the file even if present in cache.
-#' @param verify_md5 Logical. If `TRUE`, validates the MD5 checksum after download. Default is `TRUE`.
-#' @param timeout Numeric. Maximum seconds to allow for download. Default is 3600 (1 hour),
-#'   accommodating large files like `PISCOp_d.nc` (~1.52 GB).
+#' @param verify_md5 Logical. If `TRUE` and an MD5 hash is registered, validates the checksum. Default is `TRUE`.
+#' @param timeout Numeric. Maximum seconds to allow for download. Default is 3600 (1 hour).
 #' @param quiet Logical. If `TRUE`, suppresses progress messages. Default is `FALSE`.
 #'
 #' @return Character. The absolute path to the downloaded (or cached) file.
@@ -19,12 +23,19 @@
 #' @examples
 #' \dontrun{
 #' # Download monthly precipitation (56.6 MB)
-#' fpath <- pisco_download("monthly")
+#' fpath_pr <- pisco_download("monthly")
 #'
-#' # Download normal climatology 1991-2015 (1.83 MB)
-#' fpath_clim <- pisco_download("climatology")
+#' # Download climatological normal maximum temperature (0.52 MB)
+#' fpath_tx <- pisco_download("tmax_clim")
+#'
+#' # Download rainfall erosivity R-factor (1.75 MB)
+#' fpath_re <- pisco_download("erosivity_r")
 #' }
-pisco_download <- function(dataset = c("monthly", "daily", "climatology"),
+pisco_download <- function(dataset = c("monthly", "daily", "climatology",
+                                      "tmax_daily", "tmin_daily", "tmax_clim", "tmin_clim",
+                                      "eto_clim", "erosivity_r", "erosivity_density",
+                                      "streamflow_monthly", "streamflow_daily",
+                                      "catchments_gr2m", "rivers_gr2m"),
                            destdir = pisco_cache_dir(),
                            overwrite = FALSE,
                            verify_md5 = TRUE,
@@ -48,9 +59,9 @@ pisco_download <- function(dataset = c("monthly", "daily", "climatology"),
   
   if (!quiet) {
     cli::cli_h2("Downloading PISCO dataset: {dataset} ({info$product})")
-    cli::cli_alert_info("File: {.val {info$filename}} | Size: ~{info$size_mb} MB")
+    cli::cli_alert_info("Variable: {.val {info$variable}} | File: {.val {info$filename}} | Size: ~{info$size_mb} MB")
     cli::cli_alert_info("Period: {.val {info$period}} | Resolution: {.val {info$resolution}}")
-    cli::cli_alert_info("Source: Figshare repository (DOI: {.val {.pisco_doi}})")
+    cli::cli_alert_info("Source: {info$source} repository")
   }
   
   # Configure request with timeout and automatic retry
@@ -61,24 +72,24 @@ pisco_download <- function(dataset = c("monthly", "daily", "climatology"),
     req <- httr2::req_progress(req)
   }
   
-  temp_download <- tempfile(pattern = "pisco_dl_", fileext = ".tmp")
+  temp_download <- tempfile(pattern = "pisco_dl_", fileext = paste0(".", tools::file_ext(info$filename)))
   on.exit(if (file.exists(temp_download)) unlink(temp_download), add = TRUE)
   
   resp <- tryCatch(
     httr2::req_perform(req, path = temp_download),
     error = function(e) {
       cli::cli_abort(c(
-        "x" = "Failed to download {.val {info$filename}} from Figshare.",
+        "x" = "Failed to download {.val {info$filename}} from {info$source}.",
         "i" = "URL: {.url {info$download_url}}",
         "i" = "Details: {e$message}"
       ))
     }
   )
   
-  # Verify MD5 checksum if requested
-  if (isTRUE(verify_md5)) {
+  # Verify MD5 checksum if available and requested
+  if (isTRUE(verify_md5) && !is.na(info$md5)) {
     computed_hash <- tools::md5sum(temp_download)[[1]]
-    if (!is.na(info$md5) && computed_hash != info$md5) {
+    if (computed_hash != info$md5) {
       cli::cli_abort(c(
         "x" = "MD5 checksum verification failed for {info$filename}.",
         "i" = "Expected: {info$md5}",
@@ -87,6 +98,11 @@ pisco_download <- function(dataset = c("monthly", "daily", "climatology"),
     }
     if (!quiet) {
       cli::cli_alert_success("MD5 checksum verified successfully: {.val {computed_hash}}")
+    }
+  } else {
+    # Check that file has non-zero size
+    if (file.size(temp_download) < 100) {
+      cli::cli_abort("Downloaded file {.file {info$filename}} is empty or corrupted.")
     }
   }
   
