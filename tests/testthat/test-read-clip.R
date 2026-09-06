@@ -67,3 +67,10 @@ test_that(".pisco_filter_dates filters years, dates, and year-months correctly",
   r_filt <- .pisco_filter_dates(r_notime, dates = c(1997, 1998))
   expect_equal(terra::nlyr(r_filt), 24)
 })
+
+test_that("S3 plot methods for SpatRaster and SpatVector work without errors", {
+  r <- terra::rast(matrix(1:4, 2, 2))
+  # Should not error with 'invalid type passed to graphics function'
+  expect_no_error(plot(r))
+  expect_no_error(plot(r[[1]], main = "Test Layer"))
+})

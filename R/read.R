@@ -107,36 +107,45 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology",
     terra::units(r) <- info$unit
   }
   
-  # Assign time attributes and standard layer names if missing from NetCDF (e.g. Z1 dimension)
+  # Assign time attributes and standard layer names if missing from NetCDF (e.g. Z1 or z dimension)
   r_time <- terra::time(r)
   if (is.null(r_time) || all(is.na(r_time))) {
     n_lyrs <- terra::nlyr(r)
     ts <- if (!is.null(info$timestep)) info$timestep else ""
     
-    if (grepl("monthly", resolved_ds) || grepl("monthly", ts)) {
+    if ((grepl("monthly", resolved_ds) || grepl("monthly", ts)) && !grepl("clim|erosivity", resolved_ds)) {
       start_ym <- "1981-01"
-      if (!is.null(info$period) && grepl("^[0-9]{4}-[0-9]{2}", info$period)) {
+      if (!is.null(info$period) && grepl("^[0-9]{4}-(0[1-9]|1[0-2])", info$period)) {
         start_ym <- substr(info$period, 1, 7)
       }
       dts <- seq(as.Date(paste0(start_ym, "-01")), by = "month", length.out = n_lyrs)
       terra::time(r) <- dts
       names(r) <- format(dts, "%Y-%m")
-    } else if (grepl("daily", resolved_ds) || grepl("daily", ts)) {
+    } else if ((grepl("daily", resolved_ds) || grepl("daily", ts)) && !grepl("clim|erosivity", resolved_ds)) {
       start_ymd <- "1981-01-01"
-      if (!is.null(info$period) && grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}", info$period)) {
+      if (!is.null(info$period) && grepl("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])", info$period)) {
         start_ymd <- substr(info$period, 1, 10)
       }
       dts <- seq(as.Date(start_ymd), by = "day", length.out = n_lyrs)
       terra::time(r) <- dts
       names(r) <- format(dts, "%Y-%m-%d")
+    } else if (grepl("erosivity", resolved_ds) && n_lyrs == 20) {
+      # Annual time series 2001-2020
+      yrs <- 2001:2020
+      dts <- as.Date(paste0(yrs, "-01-01"))
+      terra::time(r) <- dts
+      names(r) <- paste0("year_", yrs)
     }
   }
   
   month_labels <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   
-  # For 12-month climatologies, assign month names if generic
-  if (terra::nlyr(r) == 12 && (all(grepl("^[0-9]+$", names(r))) || any(is.na(names(r))))) {
+  # For 12-month climatologies, assign standard month names
+  if (terra::nlyr(r) == 12 && (grepl("clim|eto|eo", resolved_ds) || 
+                               all(grepl("^[0-9]+$", names(r))) || 
+                               all(grepl("^[a-zA-Z]+_[0-9]+$", names(r))) || 
+                               any(is.na(names(r))))) {
     names(r) <- month_labels
   }
   

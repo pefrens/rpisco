@@ -171,12 +171,12 @@
     size_bytes = 1835008L,
     size_mb = 1.75,
     resolution = "0.10 deg (~10 km)",
-    timestep = "annual and monthly (13 layers)",
-    period = "2000-2020",
-    layers = 13L,
+    timestep = "annual (2001-2020, 20 layers)",
+    period = "2001-2020",
+    layers = 20L,
     unit = "MJ mm ha-1 h-1 yr-1",
     source = "Figshare",
-    description = "Rainfall erosivity factor R (annual total and 12 monthly layers) 2000-2020"
+    description = "Annual rainfall erosivity factor R (2001-2020, 20 layers) at 0.10 deg"
   ),
   erosivity_density = list(
     variable = "erosivity",
@@ -188,12 +188,12 @@
     size_bytes = 1835008L,
     size_mb = 1.75,
     resolution = "0.10 deg (~10 km)",
-    timestep = "annual and monthly (13 layers)",
-    period = "2000-2020",
-    layers = 13L,
+    timestep = "annual (2001-2020, 20 layers)",
+    period = "2001-2020",
+    layers = 20L,
     unit = "MJ ha-1 h-1",
     source = "Figshare",
-    description = "Monthly rainfall erosive density (ED) 2000-2020"
+    description = "Annual rainfall erosive density (ED) (2001-2020, 20 layers) at 0.10 deg"
   ),
   
   # =========================================================================

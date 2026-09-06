@@ -178,13 +178,75 @@ tmin_clim <- pisco_read("tmin_clim")
 ### 4. Evapotranspiración de Referencia y Erosividad
 
 ```{r}
-# ETo normal mensual (FAO Penman-Monteith, mm/mes)
-eto_clim <- pisco_read("eto_clim")
-plot(eto_clim[[1]], main = "PISCOeo_pm - ETo Normal Enero (mm/mes)")
+# 1. Definir región de interés (Centro del Perú: Costa y Andes)
+# c(xmin, ymin, xmax, ymax)
+aoi_centro <- c(-77.5, -12.5, -75.0, -11.0)
+# 2. Leer eto_clim recortado directamente (se ejecuta en milisegundos)
+eto_centro <- pisco_read("eto_clim", aoi = aoi_centro)
+# 3. Formato largo
+df_anual <- as.data.frame(eto_centro, xy = TRUE)
+df_largo <- reshape(
+  df_anual,
+  direction = "long",
+  varying = list(3:14),
+  v.names = "eto",
+  timevar = "mes_idx",
+  times = 1:12
+)
+meses_nombres <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun", 
+                   "Jul", "Ago", "Set", "Oct", "Nov", "Dic")
+df_largo$mes <- factor(meses_nombres[df_largo$mes_idx], levels = meses_nombres)
+# 4. Gráfico facetado de la cuenca
+ggplot(df_largo, aes(x = x, y = y, fill = eto)) +
+  geom_raster() +
+  facet_wrap(~ mes, ncol = 4) +
+  scale_fill_viridis_c(
+    name = "ETo (mm/mes)",
+    option = "mako",
+    direction = -1,
+    na.value = "transparent"
+  ) +
+  coord_sf(crs = 4326) +
+  labs(
+    title = "PISCOeo_pm - Variación Estacional de ETo en la Región Central",
+    subtitle = "Normales mensuales 1981–2010 (FAO Penman-Monteith)",
+    x = "Longitud",
+    y = "Latitud"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
 
-# Factor R de erosividad de la lluvia (RUSLE, MJ mm ha-1 h-1 yr-1)
+
+# 1. Leer el factor R de erosividad (20 capas anuales: 2001 a 2020)
 eros_r <- pisco_read("erosivity_r")
-plot(eros_r, main = "PISCO_reed - Factor R de Erosividad")
+
+# 2. Convertir la capa del año 2020 a data.frame con coordenadas (lon, lat)
+df_eros <- as.data.frame(eros_r[["year_2020"]], xy = TRUE)
+colnames(df_eros) <- c("lon", "lat", "factor_r")
+
+# 3. Gráfico con ggplot2
+ggplot(df_eros, aes(x = lon, y = lat, fill = factor_r)) +
+  geom_raster(interpolate = FALSE) +
+  scale_fill_viridis_c(
+    name = "Factor R\n(MJ mm ha⁻¹ h⁻¹ yr⁻¹)",
+    option = "turbo",
+    na.value = "transparent"
+  ) +
+  coord_sf(crs = 4326) +
+  labs(
+    x = "Longitud",
+    y = "Latitud",
+    caption = "Fuente: Gutierrez et al. (2023) / SENAMHI DHI-SEH"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 13),
+    legend.position = "bottom",
+    panel.grid = element_line(color = "gray90", linetype = "dotted")
+  )
 ```
 
 ---
