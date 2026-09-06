@@ -102,8 +102,34 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology",
   }
   
   # Assign standard units if available
+  # Assign standard units if available
   if (!is.null(info$unit)) {
     terra::units(r) <- info$unit
+  }
+  
+  # Assign time attributes and standard layer names if missing from NetCDF (e.g. Z1 dimension)
+  r_time <- terra::time(r)
+  if (is.null(r_time) || all(is.na(r_time))) {
+    n_lyrs <- terra::nlyr(r)
+    ts <- if (!is.null(info$timestep)) info$timestep else ""
+    
+    if (grepl("monthly", resolved_ds) || grepl("monthly", ts)) {
+      start_ym <- "1981-01"
+      if (!is.null(info$period) && grepl("^[0-9]{4}-[0-9]{2}", info$period)) {
+        start_ym <- substr(info$period, 1, 7)
+      }
+      dts <- seq(as.Date(paste0(start_ym, "-01")), by = "month", length.out = n_lyrs)
+      terra::time(r) <- dts
+      names(r) <- format(dts, "%Y-%m")
+    } else if (grepl("daily", resolved_ds) || grepl("daily", ts)) {
+      start_ymd <- "1981-01-01"
+      if (!is.null(info$period) && grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}", info$period)) {
+        start_ymd <- substr(info$period, 1, 10)
+      }
+      dts <- seq(as.Date(start_ymd), by = "day", length.out = n_lyrs)
+      terra::time(r) <- dts
+      names(r) <- format(dts, "%Y-%m-%d")
+    }
   }
   
   month_labels <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
@@ -137,8 +163,11 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology",
 .pisco_filter_dates <- function(r, dates, dataset_name = "monthly") {
   r_time <- terra::time(r)
   
-  # Special case for climatologies or layers without calendar dates
-  if (is.null(r_time) || all(is.na(r_time)) || grepl("clim|erosivity", dataset_name)) {
+  # Check if numeric input represents calendar years (>= 1900)
+  is_years_input <- is.numeric(dates) && all(dates >= 1900 & dates <= 2100)
+  
+  # Special case for climatologies, erosivity, or rasters without calendar dates
+  if (!is_years_input && (is.null(r_time) || all(is.na(r_time)) || grepl("clim|erosivity", dataset_name))) {
     if (is.numeric(dates)) {
       valid_idx <- dates[dates >= 1 & dates <= terra::nlyr(r)]
       if (length(valid_idx) == 0) {
@@ -156,17 +185,35 @@ pisco_read <- function(dataset = c("monthly", "daily", "climatology",
     return(r)
   }
   
+  # Fallback: if r_time is missing but input is years, search layer names
+  if (is.null(r_time) || all(is.na(r_time))) {
+    if (is_years_input) {
+      yrs_seq <- if (length(dates) == 2 && dates[2] > dates[1]) {
+        as.character(seq(dates[1], dates[2]))
+      } else {
+        as.character(dates)
+      }
+      idx <- which(vapply(seq_len(terra::nlyr(r)), function(i) {
+        any(vapply(yrs_seq, function(y) grepl(paste0("(^|[^0-9])", y, "([^0-9]|$)"), names(r)[i]), logical(1)))
+      }, logical(1)))
+      if (length(idx) > 0) {
+        return(r[[idx]])
+      }
+    }
+    cli::cli_abort("Raster lacks time attributes and dates cannot be matched from layer names.")
+  }
+  
   layer_dates <- as.Date(r_time)
   
   # Numeric years passed, e.g. 1998 or c(1997, 1998)
   if (is.numeric(dates)) {
+    layer_yrs <- as.integer(format(layer_dates, "%Y"))
     if (length(dates) == 1) {
-      idx <- which(format(layer_dates, "%Y") == as.character(dates))
+      idx <- which(layer_yrs == as.integer(dates))
+    } else if (length(dates) == 2 && dates[2] > dates[1]) {
+      idx <- which(layer_yrs >= dates[1] & layer_yrs <= dates[2])
     } else {
-      min_yr <- min(dates)
-      max_yr <- max(dates)
-      layer_yrs <- as.integer(format(layer_dates, "%Y"))
-      idx <- which(layer_yrs >= min_yr & layer_yrs <= max_yr)
+      idx <- which(layer_yrs %in% as.integer(dates))
     }
   } else if (inherits(dates, "Date") || inherits(dates, "POSIXt")) {
     dates_d <- as.Date(dates)

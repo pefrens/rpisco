@@ -59,4 +59,11 @@ test_that(".pisco_filter_dates filters years, dates, and year-months correctly",
                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   r_clim_sub <- .pisco_filter_dates(r_clim, dates = 1:3, dataset_name = "climatology")
   expect_equal(terra::nlyr(r_clim_sub), 3)
+
+  # When time(r) is NULL or NA but names have year strings
+  r_notime <- terra::rast(xmin = -82, xmax = -64, ymin = -19, ymax = 2,
+                          resolution = 1, crs = "EPSG:4326", nlyrs = 24)
+  names(r_notime) <- c(paste0("1997_", 1:12), paste0("1998_", 1:12))
+  r_filt <- .pisco_filter_dates(r_notime, dates = c(1997, 1998))
+  expect_equal(terra::nlyr(r_filt), 24)
 })
