@@ -8,13 +8,15 @@
 pisco_citation(
   dataset = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
     "streamflow"),
-  format = c("text", "bibtex")
+  format = c("text", "bibtex"),
+  variable = NULL
 )
 
 pisco_cite(
   dataset = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
     "streamflow"),
-  format = c("text", "bibtex")
+  format = c("text", "bibtex"),
+  variable = NULL
 )
 }
 \arguments{
@@ -25,6 +27,9 @@ pisco_cite(
 
 \item{format}{Character. Citation format: \code{"text"} (formatted string for papers/reports)
 or \code{"bibtex"} (BibTeX entry). Default is \code{"text"}.}
+
+\item{variable}{Character. Optional alias for \code{dataset} for consistency with \code{\link[=pisco_catalog]{pisco_catalog()}}.
+Default is \code{NULL}.}
 }
 \value{
 A character string containing the requested citation (invisibly if printed).
@@ -39,6 +44,9 @@ pisco_citation()
 
 # BibTeX for temperature (PISCOt v1.2)
 pisco_citation("temperature", format = "bibtex")
+
+# Using variable = "precipitation"
+pisco_citation(variable = "precipitation")
 
 # Citation for streamflow (PISCO_HyM)
 pisco_citation("streamflow")

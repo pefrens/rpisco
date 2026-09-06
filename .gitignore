@@ -6,4 +6,6 @@
 .quarto
 docs
 raw-docs
-^walkthrough\.md$
+walkthrough\.md
+/doc/
+/Meta/

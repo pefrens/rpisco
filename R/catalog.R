@@ -67,6 +67,8 @@ pisco_catalog <- function(variable = c("all", "precipitation", "temperature",
 #'   `"streamflow"` (`"pisco_hym"`). Default is `"all"`.
 #' @param format Character. Citation format: `"text"` (formatted string for papers/reports)
 #'   or `"bibtex"` (BibTeX entry). Default is `"text"`.
+#' @param variable Character. Optional alias for `dataset` for consistency with [pisco_catalog()].
+#'   Default is `NULL`.
 #'
 #' @return A character string containing the requested citation (invisibly if printed).
 #' @export
@@ -77,11 +79,18 @@ pisco_catalog <- function(variable = c("all", "precipitation", "temperature",
 #' # BibTeX for temperature (PISCOt v1.2)
 #' pisco_citation("temperature", format = "bibtex")
 #'
+#' # Using variable = "precipitation"
+#' pisco_citation(variable = "precipitation")
+#'
 #' # Citation for streamflow (PISCO_HyM)
 #' pisco_citation("streamflow")
 pisco_citation <- function(dataset = c("all", "precipitation", "temperature",
                                       "evapotranspiration", "erosivity", "streamflow"),
-                           format = c("text", "bibtex")) {
+                           format = c("text", "bibtex"),
+                           variable = NULL) {
+  if (!missing(variable) && !is.null(variable)) {
+    dataset <- variable
+  }
   if (is.character(dataset) && length(dataset) == 1) {
     d_low <- tolower(trimws(dataset))
     if (d_low %in% c("piscop", "precip", "lluvia")) dataset <- "precipitation"
@@ -275,6 +284,7 @@ pisco_citation <- function(dataset = c("all", "precipitation", "temperature",
 #' @export
 pisco_cite <- function(dataset = c("all", "precipitation", "temperature",
                                    "evapotranspiration", "erosivity", "streamflow"),
-                       format = c("text", "bibtex")) {
-  pisco_citation(dataset = dataset, format = format)
+                       format = c("text", "bibtex"),
+                       variable = NULL) {
+  pisco_citation(dataset = dataset, format = format, variable = variable)
 }

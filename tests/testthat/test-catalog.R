@@ -103,4 +103,11 @@ test_that("pisco_citation produces text and bibtex formats across variables", {
   bib_q <- pisco_cite("streamflow", "bibtex")
   expect_match(bib_q, "@article\\{llauca2021gr2m")
   expect_match(bib_q, "@article\\{llauca2023arnovic")
+  
+  # Support variable = "precipitation" alias
+  txt_var <- pisco_citation(variable = "precipitation")
+  expect_match(txt_var, "Gutierrez, L. y Lavado-Casimiro, W.")
+  
+  bib_var <- pisco_cite(variable = "temperature", format = "bibtex")
+  expect_match(bib_var, "@article\\{huerta2023piscot")
 })

@@ -11,3 +11,5 @@
 ^docs$
 ^pkgdown$
 ^walkthrough\.md$
+^doc$
+^Meta$
