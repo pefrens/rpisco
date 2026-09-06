@@ -10,13 +10,15 @@ international journals.
 pisco_citation(
   dataset = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
     "streamflow"),
-  format = c("text", "bibtex")
+  format = c("text", "bibtex"),
+  variable = NULL
 )
 
 pisco_cite(
   dataset = c("all", "precipitation", "temperature", "evapotranspiration", "erosivity",
     "streamflow"),
-  format = c("text", "bibtex")
+  format = c("text", "bibtex"),
+  variable = NULL
 )
 ```
 
@@ -33,6 +35,12 @@ pisco_cite(
 
   Character. Citation format: `"text"` (formatted string for
   papers/reports) or `"bibtex"` (BibTeX entry). Default is `"text"`.
+
+- variable:
+
+  Character. Optional alias for `dataset` for consistency with
+  [`pisco_catalog()`](https://pefrens.github.io/rpisco/reference/pisco_catalog.md).
+  Default is `NULL`.
 
 ## Value
 
@@ -100,6 +108,19 @@ pisco_citation("temperature", format = "bibtex")
 #>   year    = {2023},
 #>   doi     = {10.1038/s41597-023-02777-w}
 #> } 
+
+# Using variable = "precipitation"
+pisco_citation(variable = "precipitation")
+#> === 1. PRECIPITACION (PISCOp v3.0 & PISCOp_h) ===
+#> Gutierrez, L. y Lavado-Casimiro, W. (2025). PISCOp (v3.0): Actualizacion de datos
+#>   grillados de precipitacion. Servicio Nacional de Meteorologia e Hidrologia del Peru - SENAMHI.
+#>   Libro disponible en: https://hdl.handle.net/20.500.12542/4183 (Deposito Legal N 2025-07014)
+#>   Dataset en Figshare: https://doi.org/10.6084/m9.figshare.32411886
+#> 
+#> Precipitacion horaria (PISCOp_h):
+#>   Huerta, A., Lavado-Casimiro, W., & Felipe-Obando, O. (2022). High-resolution gridded
+#>   hourly precipitation dataset for Peru (PISCOp_h). Data in Brief, 45, 108570.
+#>   https://doi.org/10.1016/j.dib.2022.108570 
 
 # Citation for streamflow (PISCO_HyM)
 pisco_citation("streamflow")
