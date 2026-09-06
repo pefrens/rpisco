@@ -30,7 +30,7 @@ Portal oficial del SENAMHI DHI-SEH:
 
 ------------------------------------------------------------------------
 
-## 🌐 Ecosistema de Datos PISCO Disponibles en R
+## Ecosistema de Datos PISCO Disponibles en R
 
 A través de `rpisco`, puedes consultar el catálogo, descargar, cargar en
 memoria y analizar directamente en `terra` y `sf` todos los productos
@@ -48,7 +48,7 @@ desarrollados por SENAMHI DHI-SEH y colaboradores:
 
 ------------------------------------------------------------------------
 
-## 📂 Detalle de Productos y Archivos
+## Detalle de Productos y Archivos
 
 ### 1. Precipitación: PISCOp v3.0 (1981–2025) y PISCOp_h
 
@@ -116,7 +116,7 @@ desarrollados por SENAMHI DHI-SEH y colaboradores:
 
 ------------------------------------------------------------------------
 
-## 📦 Características Principales del Paquete `rpisco`
+## Características Principales del Paquete `rpisco`
 
 - **Catálogo unificado y filtrable:** Explora todos los productos por
   variable (`precipitation`, `temperature`, `evapotranspiration`,
@@ -154,7 +154,7 @@ desarrollados por SENAMHI DHI-SEH y colaboradores:
 
 ------------------------------------------------------------------------
 
-## 🚀 Instalación
+## Instalación
 
 Puedes instalar la versión de desarrollo de **rpisco** desde GitHub con:
 
@@ -168,7 +168,7 @@ pak::pak("pefrens/rpisco")
 
 ------------------------------------------------------------------------
 
-## 💡 Ejemplos de Uso
+## Ejemplos de Uso
 
 ### 1. Explorar el Catálogo y Obtener Citas
 
@@ -177,18 +177,116 @@ library(rpisco)
 
 # Ver todo el catálogo de productos disponibles
 pisco_catalog()
+#> # A tibble: 14 × 13
+#>    dataset     variable product filename timestep period layers resolution unit 
+#>    <chr>       <chr>    <chr>   <chr>    <chr>    <chr>   <int> <chr>      <chr>
+#>  1 monthly     precipi… PISCOp… PISCOp_… monthly  1981-…    540 0.10 deg … mm/m…
+#>  2 daily       precipi… PISCOp… PISCOp_… daily    1981-…  16436 0.10 deg … mm/d…
+#>  3 climatology precipi… PISCOp… PISCOp_… climato… 1991-…     12 0.10 deg … mm/m…
+#>  4 tmax_daily  tempera… PISCOt… tmax_da… daily    1981-…  14610 0.10 deg … degC 
+#>  5 tmin_daily  tempera… PISCOt… tmin_da… daily    1981-…  14610 0.10 deg … degC 
+#>  6 tmax_clim   tempera… PISCOt… tmax_me… climato… 1981-…     12 0.10 deg … degC 
+#>  7 tmin_clim   tempera… PISCOt… tmin_me… climato… 1981-…     12 0.10 deg … degC 
+#>  8 eto_clim    evapotr… PISCOe… eo_mean… climato… 1981-…     12 0.10 deg … mm/m…
+#>  9 erosivity_r erosivi… PISCOa… PISCOa_… annual … 2001-…     20 0.10 deg … MJ m…
+#> 10 erosivity_… erosivi… PISCOa… PISCOa_… annual … 2001-…     20 0.10 deg … MJ h…
+#> 11 streamflow… streamf… PISCO_… PISCO_G… monthly  1981-…    480 river rea… m3/s 
+#> 12 streamflow… streamf… PISCO_… PISCO_A… daily    1981-…  14610 river rea… m3/s 
+#> 13 catchments… streamf… cat_pi… cat_pis… static   1981-…      1 vector po… boun…
+#> 14 rivers_gr2m streamf… riv_pi… riv_pis… static   1981-…      1 vector li… stre…
+#> # ℹ 4 more variables: size_mb <dbl>, source <chr>, cached <lgl>,
+#> #   download_url <chr>
 
 # Filtrar por familia de variable
 pisco_catalog(variable = "precipitation")
+#> # A tibble: 3 × 13
+#>   dataset     variable  product filename timestep period layers resolution unit 
+#>   <chr>       <chr>     <chr>   <chr>    <chr>    <chr>   <int> <chr>      <chr>
+#> 1 monthly     precipit… PISCOp… PISCOp_… monthly  1981-…    540 0.10 deg … mm/m…
+#> 2 daily       precipit… PISCOp… PISCOp_… daily    1981-…  16436 0.10 deg … mm/d…
+#> 3 climatology precipit… PISCOp… PISCOp_… climato… 1991-…     12 0.10 deg … mm/m…
+#> # ℹ 4 more variables: size_mb <dbl>, source <chr>, cached <lgl>,
+#> #   download_url <chr>
 pisco_catalog(variable = "temperature")
+#> # A tibble: 4 × 13
+#>   dataset    variable   product filename timestep period layers resolution unit 
+#>   <chr>      <chr>      <chr>   <chr>    <chr>    <chr>   <int> <chr>      <chr>
+#> 1 tmax_daily temperatu… PISCOt… tmax_da… daily    1981-…  14610 0.10 deg … degC 
+#> 2 tmin_daily temperatu… PISCOt… tmin_da… daily    1981-…  14610 0.10 deg … degC 
+#> 3 tmax_clim  temperatu… PISCOt… tmax_me… climato… 1981-…     12 0.10 deg … degC 
+#> 4 tmin_clim  temperatu… PISCOt… tmin_me… climato… 1981-…     12 0.10 deg … degC 
+#> # ℹ 4 more variables: size_mb <dbl>, source <chr>, cached <lgl>,
+#> #   download_url <chr>
 pisco_catalog(variable = "evapotranspiration")
+#> # A tibble: 1 × 13
+#>   dataset  variable     product filename timestep period layers resolution unit 
+#>   <chr>    <chr>        <chr>   <chr>    <chr>    <chr>   <int> <chr>      <chr>
+#> 1 eto_clim evapotransp… PISCOe… eo_mean… climato… 1981-…     12 0.10 deg … mm/m…
+#> # ℹ 4 more variables: size_mb <dbl>, source <chr>, cached <lgl>,
+#> #   download_url <chr>
 pisco_catalog(variable = "erosivity")
+#> # A tibble: 2 × 13
+#>   dataset      variable product filename timestep period layers resolution unit 
+#>   <chr>        <chr>    <chr>   <chr>    <chr>    <chr>   <int> <chr>      <chr>
+#> 1 erosivity_r  erosivi… PISCOa… PISCOa_… annual … 2001-…     20 0.10 deg … MJ m…
+#> 2 erosivity_d… erosivi… PISCOa… PISCOa_… annual … 2001-…     20 0.10 deg … MJ h…
+#> # ℹ 4 more variables: size_mb <dbl>, source <chr>, cached <lgl>,
+#> #   download_url <chr>
 pisco_catalog(variable = "streamflow")
+#> # A tibble: 4 × 13
+#>   dataset      variable product filename timestep period layers resolution unit 
+#>   <chr>        <chr>    <chr>   <chr>    <chr>    <chr>   <int> <chr>      <chr>
+#> 1 streamflow_… streamf… PISCO_… PISCO_G… monthly  1981-…    480 river rea… m3/s 
+#> 2 streamflow_… streamf… PISCO_… PISCO_A… daily    1981-…  14610 river rea… m3/s 
+#> 3 catchments_… streamf… cat_pi… cat_pis… static   1981-…      1 vector po… boun…
+#> 4 rivers_gr2m  streamf… riv_pi… riv_pis… static   1981-…      1 vector li… stre…
+#> # ℹ 4 more variables: size_mb <dbl>, source <chr>, cached <lgl>,
+#> #   download_url <chr>
 
 # Obtener citas oficiales en formato texto o BibTeX
 pisco_citation(variable = "precipitation", format = "text")
+#> === 1. PRECIPITACION (PISCOp v3.0 & PISCOp_h) ===
+#> Gutierrez, L. y Lavado-Casimiro, W. (2025). PISCOp (v3.0): Actualizacion de datos
+#>   grillados de precipitacion. Servicio Nacional de Meteorologia e Hidrologia del Peru - SENAMHI.
+#>   Libro disponible en: https://hdl.handle.net/20.500.12542/4183 (Deposito Legal N 2025-07014)
+#>   Dataset en Figshare: https://doi.org/10.6084/m9.figshare.32411886
+#> 
+#> Precipitacion horaria (PISCOp_h):
+#>   Huerta, A., Lavado-Casimiro, W., & Felipe-Obando, O. (2022). High-resolution gridded
+#>   hourly precipitation dataset for Peru (PISCOp_h). Data in Brief, 45, 108570.
+#>   https://doi.org/10.1016/j.dib.2022.108570
 pisco_citation(variable = "temperature", format = "bibtex")
+#> @article{huerta2023piscot,
+#>   author  = {Huerta, Adrian and Aybar, Cesar and Imfeld, Noemi and Correa, Karen and Felipe-Obando, Oscar and Rau, Pedro and Drenkhan, Fabian and Lavado-Casimiro, Waldo},
+#>   title   = {{High-resolution grids of daily air temperature for Peru - the new PISCOt v1.2 dataset}},
+#>   journal = {Scientific Data},
+#>   volume  = {10},
+#>   number  = {1},
+#>   pages   = {847},
+#>   year    = {2023},
+#>   doi     = {10.1038/s41597-023-02777-w}
+#> }
 pisco_citation(variable = "streamflow", format = "bibtex")
+#> @article{llauca2021gr2m,
+#>   author  = {Llauca, Harold and Lavado-Casimiro, Waldo and Montesinos, Cesar and Santini, William and Rau, Pedro},
+#>   title   = {{PISCO\_HyM\_GR2M: A model of monthly water balance in Peru (1981--2020)}},
+#>   journal = {Water},
+#>   volume  = {13},
+#>   number  = {8},
+#>   pages   = {1048},
+#>   year    = {2021},
+#>   doi     = {10.3390/w13081048}
+#> }
+#> 
+#> @article{llauca2023arnovic,
+#>   author  = {Llauca, Harold and Leon, Karen and Lavado-Casimiro, Waldo},
+#>   title   = {{Construction of a daily streamflow dataset for Peru using a similarity-based regionalization approach and a hybrid hydrological modeling framework}},
+#>   journal = {Journal of Hydrology: Regional Studies},
+#>   volume  = {47},
+#>   pages   = {101381},
+#>   year    = {2023},
+#>   doi     = {10.1016/j.ejrh.2023.101381}
+#> }
 ```
 
 ------------------------------------------------------------------------
@@ -200,6 +298,7 @@ local y lo carga como un objeto `terra::SpatRaster`:
 
 ``` r
 library(terra)
+#> terra 1.9.46
 
 # Cargar precipitación mensual (1981-2025, 540 capas)
 pr_m <- pisco_read("monthly")
@@ -219,6 +318,11 @@ pr_nino <- pisco_read("monthly", dates = c(1997, 1998))
 # Climatología normal mensual de temperatura máxima (°C)
 tmax_clim <- pisco_read("tmax_clim")
 plot(tmax_clim[[1]], main = "PISCOt - Tmax Normal Enero (°C)")
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" alt="" width="100%" />
+
+``` r
 
 # Climatología de temperatura mínima (°C)
 tmin_clim <- pisco_read("tmin_clim")
@@ -232,14 +336,95 @@ tmin_clim <- pisco_read("tmin_clim")
 ### 4. Evapotranspiración de Referencia y Erosividad
 
 ``` r
-# ETo normal mensual (FAO Penman-Monteith, mm/mes)
-eto_clim <- pisco_read("eto_clim")
-plot(eto_clim[[1]], main = "PISCOeo_pm - ETo Normal Enero (mm/mes)")
-
-# Factor R de erosividad de la lluvia (RUSLE, MJ mm ha-1 h-1 yr-1)
-eros_r <- pisco_read("erosivity_r")
-plot(eros_r, main = "PISCO_reed - Factor R de Erosividad")
+library(tidyverse)
+#> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+#> ✔ dplyr     1.2.1     ✔ readr     2.2.0
+#> ✔ forcats   1.0.1     ✔ stringr   1.6.0
+#> ✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+#> ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+#> ✔ purrr     1.2.2     
+#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+#> ✖ tidyr::extract() masks terra::extract()
+#> ✖ dplyr::filter()  masks stats::filter()
+#> ✖ dplyr::lag()     masks stats::lag()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+# 1. Definir región de interés (Centro del Perú: Costa y Andes)
+# c(xmin, ymin, xmax, ymax)
+aoi_centro <- c(-77.5, -12.5, -75.0, -11.0)
+# 2. Leer eto_clim recortado directamente (se ejecuta en milisegundos)
+eto_centro <- pisco_read("eto_clim", aoi = aoi_centro)
+# 3. Formato largo
+df_anual <- as.data.frame(eto_centro, xy = TRUE)
+df_largo <- reshape(
+  df_anual,
+  direction = "long",
+  varying = list(3:14),
+  v.names = "eto",
+  timevar = "mes_idx",
+  times = 1:12
+)
+meses_nombres <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun", 
+                   "Jul", "Ago", "Set", "Oct", "Nov", "Dic")
+df_largo$mes <- factor(meses_nombres[df_largo$mes_idx], levels = meses_nombres)
+# 4. Gráfico facetado de la cuenca
+ggplot(df_largo, aes(x = x, y = y, fill = eto)) +
+  geom_raster() +
+  facet_wrap(~ mes, ncol = 4) +
+  scale_fill_viridis_c(
+    name = "ETo (mm/mes)",
+    option = "mako",
+    direction = -1,
+    na.value = "transparent"
+  ) +
+  coord_sf(crs = 4326) +
+  labs(
+    title = "PISCOeo_pm - Variación Estacional de ETo en la Región Central",
+    subtitle = "Normales mensuales 1981–2010 (FAO Penman-Monteith)",
+    x = "Longitud",
+    y = "Latitud"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
 ```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" alt="" width="100%" />
+
+``` r
+
+
+# 1. Leer el factor R de erosividad (20 capas anuales: 2001 a 2020)
+eros_r <- pisco_read("erosivity_r")
+
+# 2. Convertir la capa del año 2020 a data.frame con coordenadas (lon, lat)
+df_eros <- as.data.frame(eros_r[["year_2020"]], xy = TRUE)
+colnames(df_eros) <- c("lon", "lat", "factor_r")
+
+# 3. Gráfico con ggplot2
+ggplot(df_eros, aes(x = lon, y = lat, fill = factor_r)) +
+  geom_raster(interpolate = FALSE) +
+  scale_fill_viridis_c(
+    name = "Factor R\n(MJ mm ha⁻¹ h⁻¹ yr⁻¹)",
+    option = "turbo",
+    na.value = "transparent"
+  ) +
+  coord_sf(crs = 4326) +
+  labs(
+    x = "Longitud",
+    y = "Latitud",
+    caption = "Fuente: Gutierrez et al. (2023) / SENAMHI DHI-SEH"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 13),
+    legend.position = "bottom",
+    panel.grid = element_line(color = "gray90", linetype = "dotted")
+  )
+```
+
+<img src="man/figures/README-unnamed-chunk-5-2.png" alt="" width="100%" />
 
 ------------------------------------------------------------------------
 
@@ -250,13 +435,49 @@ vectoriales de cuencas y ríos directamente en formato `sf`:
 
 ``` r
 library(sf)
+#> Linking to GEOS 3.14.1, GDAL 3.12.1, PROJ 9.7.1; sf_use_s2() is TRUE
 
 # Leer polígonos de subcuencas del modelo GR2M como objeto sf
 cuencas_gr2m <- pisco_read("cat_pisco_gr2m")
+#> ℹ Dataset 'catchments_gr2m' not found in cache. Starting download...
+#> 
+#> ── Downloading PISCO dataset: catchments_gr2m (cat_pisco_gr2m) ──
+#> 
+#> ℹ Variable: "streamflow" | File: "cat_pisco_gr2m_v2.0.gpkg" | Size: ~100.46 MB
+#> ℹ Period: "1981-2020" | Resolution: "vector polygons"
+#> ℹ Source: HydroShare repository
+#> ✔ Dataset saved successfully to: 'C:\Users\PC\AppData\Local/R/cache/R/rpisco/cat_pisco_gr2m_v2.0.gpkg'
 head(cuencas_gr2m)
+#> Simple feature collection with 6 features and 8 fields
+#> Geometry type: MULTIPOLYGON
+#> Dimension:     XY
+#> Bounding box:  xmin: -78.005 ymin: -0.245 xmax: -77.72167 ymax: 0.2733333
+#> Geodetic CRS:  WGS 84
+#>   HydroID OBJECTID GridID NextDownID   COMID Shape_Leng Shape_Area Tot_Drain_
+#> 1   20302    20302  21958      20587 9022991  103156.32  249416660  249416660
+#> 2   20315    20315  21972      20325 9023426   93137.37  221490537  221490537
+#> 3   20325    20325  21982      20632 9023766   83118.58  169177071  571763415
+#> 4   20339    20339  21996      20325 9023659   93137.33  181095807  181095807
+#> 5   20345    20345  22002      20632 9023765   71801.12  117070405  117070405
+#> 6   20367    20367  22027      20376 9024254   64565.47   97002478   97002478
+#>                             geom
+#> 1 MULTIPOLYGON (((-77.82583 0...
+#> 2 MULTIPOLYGON (((-77.98917 0...
+#> 3 MULTIPOLYGON (((-77.78667 -...
+#> 4 MULTIPOLYGON (((-77.96917 -...
+#> 5 MULTIPOLYGON (((-77.865 -0....
+#> 6 MULTIPOLYGON (((-77.92083 -...
 
 # Leer red de ríos principales
 rios_gr2m <- pisco_read("riv_pisco_gr2m")
+#> ℹ Dataset 'rivers_gr2m' not found in cache. Starting download...
+#> 
+#> ── Downloading PISCO dataset: rivers_gr2m (riv_pisco_gr2m) ──
+#> 
+#> ℹ Variable: "streamflow" | File: "riv_pisco_gr2m_v2.0.gpkg" | Size: ~15.18 MB
+#> ℹ Period: "1981-2020" | Resolution: "vector lines"
+#> ℹ Source: HydroShare repository
+#> ✔ Dataset saved successfully to: 'C:\Users\PC\AppData\Local/R/cache/R/rpisco/riv_pisco_gr2m_v2.0.gpkg'
 
 # Leer grilla de caudales mensuales simulados
 # q_gr2m <- pisco_read("pisco_gr2m", dates = 2010)
@@ -291,12 +512,12 @@ head(serie_cusco)
 #> # A tibble: 6 × 5
 #>      id   lon   lat date       precipitation
 #>   <int> <dbl> <dbl> <date>             <dbl>
-#> 1     1 -72.0 -13.5 1981-01-01         142.4
-#> 2     1 -72.0 -13.5 1981-02-01         118.1
-#> 3     1 -72.0 -13.5 1981-03-01          98.6
-#> 4     1 -72.0 -13.5 1981-04-01          34.2
-#> 5     1 -72.0 -13.5 1981-05-01           8.1
-#> 6     1 -72.0 -13.5 1981-06-01           2.3
+#> 1     1 -72.0 -13.5 1981-01-01        206.  
+#> 2     1 -72.0 -13.5 1981-02-01        135.  
+#> 3     1 -72.0 -13.5 1981-03-01        108.  
+#> 4     1 -72.0 -13.5 1981-04-01         26.2 
+#> 5     1 -72.0 -13.5 1981-05-01          3.54
+#> 6     1 -72.0 -13.5 1981-06-01          6.29
 ```
 
 ------------------------------------------------------------------------
@@ -348,9 +569,9 @@ sim <- c(14.0, 25.1, 0.2, 5.8, 68.3, 102.1)
 # Resumen de métricas oficiales
 pisco_metrics(sim, obs)
 #> # A tibble: 1 × 8
-#>       n   cor    dr   nmb  nmge  rmse   mae  bias
-#>   <int> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1     6 0.998 0.954 -3.73 0.061  4.23  2.43 -1.43
+#>       n   cor    dr   nmb   nmge  rmse   mae  bias
+#>   <int> <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl>
+#> 1     6 1.000 0.956 -6.39 0.0804  4.07  3.08 -2.45
 ```
 
 ------------------------------------------------------------------------
@@ -371,7 +592,7 @@ pisco_cache_status()
 
 ------------------------------------------------------------------------
 
-## 📖 Referencias y Citaciones
+## Referencias y Citaciones
 
 Al utilizar **`rpisco`** en investigaciones o consultorías técnicas, por
 favor cita las publicaciones científicas correspondientes a los

@@ -178,6 +178,7 @@ tmin_clim <- pisco_read("tmin_clim")
 ### 4. Evapotranspiración de Referencia y Erosividad
 
 ```{r}
+library(tidyverse)
 # 1. Definir región de interés (Centro del Perú: Costa y Andes)
 # c(xmin, ymin, xmax, ymax)
 aoi_centro <- c(-77.5, -12.5, -75.0, -11.0)
