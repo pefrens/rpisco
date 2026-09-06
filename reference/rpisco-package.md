@@ -7,12 +7,32 @@ and hydrological Observations (PISCO).
 
 ## Details
 
-Specifically supports PISCOp v3.0 (1981-2025) gridded daily, monthly,
-and normal climatology rainfall datasets published by Gutierrez and
-Lavado-Casimiro (2025) on Figshare (<doi:10.6084/m9.figshare.32411886>)
-and documented in the official technical publication of the Servicio
-Nacional de Meteorologia e Hidrologia del Peru (SENAMHI):
-<https://hdl.handle.net/20.500.12542/4183>.
+Supports the complete family of PISCO datasets developed by SENAMHI
+DHI-SEH:
+
+- **Precipitation (PISCOp)**: PISCOp v3.0 (1981-2025; daily, monthly,
+  and climatological normal) and PISCOp_h (1981-2023 coarse gridded
+  rainfall).
+
+- **Temperature (PISCOt)**: PISCOt v1.2 (1981-2016; maximum and minimum
+  daily, monthly, and climatological normal).
+
+- **Evapotranspiration (PISCOeo_pm)**: PISCOeo_pm (1981-2016; daily,
+  monthly, and climatological normal reference evapotranspiration).
+
+- **Rainfall Erosivity (PISCO_reed)**: PISCO_reed v1.0 (1981-2016;
+  R-factor climatology and annual erosivity series).
+
+- **Streamflow (PISCO_HyM)**: Monthly gridded and vector streamflow
+  (1981-2016) based on hydrological modeling (GR2M and ARNOVIC) with
+  sub-basin polygons and river reach networks.
+
+Datasets are hosted on Figshare and HydroShare by SENAMHI and
+collaborating researchers. See
+[`pisco_catalog`](https://pefrens.github.io/rpisco/reference/pisco_catalog.md)
+and
+[`pisco_citation`](https://pefrens.github.io/rpisco/reference/pisco_citation.md)
+for links, dataset keys, and scientific citations.
 
 ## See also
 

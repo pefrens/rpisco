@@ -14,7 +14,7 @@
   : Catalog of PISCO Products
 - [`pisco_citation()`](https://pefrens.github.io/rpisco/reference/pisco_citation.md)
   [`pisco_cite()`](https://pefrens.github.io/rpisco/reference/pisco_citation.md)
-  : Citation Information for PISCOp v3.0
+  : Citation Information for PISCO Products
 - [`pisco_clip()`](https://pefrens.github.io/rpisco/reference/pisco_clip.md)
   : Spatial Cropping and Masking for PISCO Rasters
 - [`pisco_download()`](https://pefrens.github.io/rpisco/reference/pisco_download.md)
@@ -31,4 +31,4 @@
   [`pisco_metrics()`](https://pefrens.github.io/rpisco/reference/pisco_metrics.md)
   : Statistical Validation Metrics for PISCO
 - [`pisco_read()`](https://pefrens.github.io/rpisco/reference/pisco_read.md)
-  : Read PISCO NetCDF as SpatRaster
+  : Read PISCO Datasets as SpatRaster or sf Vector

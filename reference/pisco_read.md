@@ -1,15 +1,18 @@
-# Read PISCO NetCDF as SpatRaster
+# Read PISCO Datasets as SpatRaster or sf Vector
 
-Reads a PISCO NetCDF file into a
-[terra::SpatRaster](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
-object. If the file is not present locally, it can be downloaded
-automatically if `download = TRUE`.
+Reads a PISCO dataset into memory or memory-mapped objects
+([terra::SpatRaster](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
+for raster grids, or `sf` for catchment/river vector layers). If the
+file is not present locally, it can be downloaded automatically if
+`download = TRUE`.
 
 ## Usage
 
 ``` r
 pisco_read(
-  dataset = c("monthly", "daily", "climatology"),
+  dataset = c("monthly", "daily", "climatology", "tmax_daily", "tmin_daily", "tmax_clim",
+    "tmin_clim", "eto_clim", "erosivity_r", "erosivity_density", "streamflow_monthly",
+    "streamflow_daily", "catchments_gr2m", "rivers_gr2m"),
   file = NULL,
   dates = NULL,
   aoi = NULL,
@@ -22,25 +25,36 @@ pisco_read(
 
 - dataset:
 
-  Character. The dataset to load: `"monthly"` (`"PISCOp_m"`), `"daily"`
-  (`"PISCOp_d"`), or `"climatology"` (`"PISCOp_clim2"`). Default is
-  `"monthly"`.
+  Character. The dataset to load:
+
+  - Precipitation: `"monthly"` (`"PISCOp_m"`), `"daily"` (`"PISCOp_d"`),
+    `"climatology"` (`"PISCOp_clim2"`).
+
+  - Temperature: `"tmax_daily"`, `"tmin_daily"`, `"tmax_clim"`,
+    `"tmin_clim"`.
+
+  - Evapotranspiration: `"eto_clim"` (`"PISCOeo_pm"`).
+
+  - Erosivity: `"erosivity_r"`, `"erosivity_density"`.
+
+  - Streamflow: `"streamflow_monthly"`, `"streamflow_daily"`,
+    `"catchments_gr2m"`, `"rivers_gr2m"`. Default is `"monthly"`.
 
 - file:
 
-  Character. Optional custom path to a PISCO NetCDF file. If `NULL`,
-  looks in the local cache or downloads automatically.
+  Character. Optional custom path to a PISCO NetCDF or GeoPackage file.
+  If `NULL`, looks in the local cache or downloads automatically.
 
 - dates:
 
   Vector of dates, years, year-months, or indices to filter layers.
 
-  - For daily/monthly: can be Date objects, character dates
+  - For daily/monthly rasters: Date objects, character dates
     (`"1998-01-01"`), character year-months (`c("1997-01", "1998-12")`),
     or numeric years (`1998` or `c(1997, 1998)`).
 
-  - For climatology (12 months): can be integer month numbers (`1:12`)
-    or month names.
+  - For climatologies (12 months): integer month numbers (`1:12`) or
+    month names.
 
 - aoi:
 
@@ -60,22 +74,22 @@ pisco_read(
 
 A
 [terra::SpatRaster](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
-object with assigned CRS and time attributes.
+object (for gridded data) or an `sf` object (for vector hydrography).
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# Read monthly precipitation (1981-2025)
-r <- pisco_read("monthly")
+# Read monthly precipitation
+r_pr <- pisco_read("monthly")
 
-# Read specific time period (e.g. El Nino 1997-1998)
-r_nino <- pisco_read("monthly", dates = c("1997-01-01", "1998-12-31"))
+# Read normal maximum temperature 1981-2010
+r_tx <- pisco_read("tmax_clim")
 
-# Read with direct spatial clipping to a bounding box
-r_sub <- pisco_read("monthly", dates = 1998, aoi = c(-77.5, -12.5, -76.0, -11.5))
+# Read reference evapotranspiration climatology
+r_eto <- pisco_read("eto_clim")
 
-# Read climatological normals 1991-2015
-r_clim <- pisco_read("climatology")
+# Read rainfall erosivity R-factor
+r_ero <- pisco_read("erosivity_r")
 } # }
 ```
