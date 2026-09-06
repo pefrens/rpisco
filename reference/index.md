@@ -32,3 +32,6 @@
   : Statistical Validation Metrics for PISCO
 - [`pisco_read()`](https://pefrens.github.io/rpisco/reference/pisco_read.md)
   : Read PISCO Datasets as SpatRaster or sf Vector
+- [`plot(`*`<SpatRaster>`*`)`](https://pefrens.github.io/rpisco/reference/plot.SpatRaster.md)
+  [`plot(`*`<SpatVector>`*`)`](https://pefrens.github.io/rpisco/reference/plot.SpatRaster.md)
+  : Plot SpatRaster and SpatVector Objects
